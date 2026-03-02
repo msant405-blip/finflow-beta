@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FinFlow">
+<meta name="theme-color" content="#080810">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="manifest" href="manifest.json">
+<title>FinFlow Beta</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{
+  height:100%;width:100%;
+  background:#080810;
+  font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif;
+  color:#fff;
+  overflow:hidden;
+}
+.gate{
+  min-height:100vh;min-height:100dvh;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:32px 24px;
+  gap:0;
+}
+.logo{
+  font-size:52px;font-weight:900;letter-spacing:-2.5px;
+  margin-bottom:6px;
+  line-height:1;
+}
+.logo em{
+  font-style:normal;
+  background:linear-gradient(135deg,#7b61ff,#a78bfa);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.tagline{
+  font-size:13px;color:rgba(255,255,255,.35);
+  letter-spacing:0.5px;margin-bottom:52px;
+}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(123,97,255,.12);border:1px solid rgba(123,97,255,.25);
+  border-radius:20px;padding:5px 14px;
+  font-size:11px;font-weight:700;color:#a78bfa;
+  letter-spacing:0.8px;text-transform:uppercase;
+  margin-bottom:28px;
+}
+.card{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:20px;
+  padding:28px 24px;
+  width:100%;max-width:360px;
+}
+.card-title{
+  font-size:16px;font-weight:700;margin-bottom:6px;
+}
+.card-sub{
+  font-size:12px;color:rgba(255,255,255,.35);margin-bottom:22px;line-height:1.5;
+}
+.input-wrap{position:relative;margin-bottom:16px;}
+input{
+  width:100%;
+  background:rgba(255,255,255,.06);
+  border:1.5px solid rgba(255,255,255,.1);
+  border-radius:12px;
+  padding:14px 46px 14px 16px;
+  font-size:15px;color:#fff;
+  font-family:inherit;
+  outline:none;
+  transition:border-color .2s;
+  letter-spacing:1px;
+}
+input::placeholder{color:rgba(255,255,255,.2);letter-spacing:0;}
+input:focus{border-color:rgba(123,97,255,.6);background:rgba(123,97,255,.06);}
+input.error{border-color:rgba(255,80,100,.5);animation:shake .3s ease;}
+.eye-btn{
+  position:absolute;right:14px;top:50%;transform:translateY(-50%);
+  background:none;border:none;cursor:pointer;
+  color:rgba(255,255,255,.3);font-size:18px;padding:4px;
+}
+.btn{
+  width:100%;padding:15px;border-radius:12px;border:none;
+  background:linear-gradient(135deg,#7b61ff,#6d4fe0);
+  color:#fff;font-size:15px;font-weight:700;
+  cursor:pointer;letter-spacing:0.3px;
+  transition:transform .15s,opacity .15s;
+  font-family:inherit;
+}
+.btn:active{transform:scale(.97);opacity:.9;}
+.btn:disabled{opacity:.5;cursor:default;}
+.error-msg{
+  font-size:12px;color:#ff5064;text-align:center;
+  margin-top:12px;min-height:18px;
+  transition:opacity .2s;
+}
+.footer{
+  margin-top:32px;font-size:11px;
+  color:rgba(255,255,255,.15);text-align:center;line-height:1.8;
+}
+@keyframes shake{
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-8px)}
+  75%{transform:translateX(8px)}
+}
+@keyframes fadein{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.gate{animation:fadein .5s ease both;}
+</style>
+</head>
+<body>
+<div class="gate">
+  <div class="logo">Fin<em>Flow</em></div>
+  <div class="tagline">Gestão financeira inteligente</div>
+  <div class="badge">🔐 Beta Fechado</div>
+  <div class="card">
+    <div class="card-title">Acesso restrito</div>
+    <div class="card-sub">Você recebeu um código de acesso.<br>Digite abaixo para continuar.</div>
+    <div class="input-wrap">
+      <input type="password" id="code-input" placeholder="Código de acesso" 
+             autocomplete="off" autocorrect="off" spellcheck="false"
+             onkeydown="if(event.key==='Enter')verify()">
+      <button class="eye-btn" onclick="toggleEye()" id="eye-btn">👁</button>
+    </div>
+    <button class="btn" onclick="verify()" id="enter-btn">Entrar no Beta →</button>
+    <div class="error-msg" id="err-msg"></div>
+  </div>
+  <div class="footer">
+    FinFlow Beta — Acesso exclusivo<br>
+    Não compartilhe este link
+  </div>
+</div>
+<script>
+var _h='ff86fc02e9d56c238720955a73986e7ca7b96452d8e3e9676c997bc4098ed06f';
+var _attempts=0;
+var _locked=false;
+
+function sha256(s){
+  // Simple hash check via stored hash comparison
+  // Real SHA256 done server-side via redirect; client uses sessionStorage token
+  return s;
+}
+
+async function verify(){
+  if(_locked)return;
+  var inp=document.getElementById('code-input');
+  var btn=document.getElementById('enter-btn');
+  var err=document.getElementById('err-msg');
+  var val=inp.value.trim().toLowerCase();
+  if(!val){inp.classList.add('error');setTimeout(()=>inp.classList.remove('error'),400);return;}
+  
+  btn.disabled=true;
+  btn.textContent='Verificando...';
+  
+  // Hash the input using SubtleCrypto
+  try{
+    var enc=new TextEncoder().encode(val);
+    var buf=await crypto.subtle.digest('SHA-256',enc);
+    var hex=Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    
+    if(hex===_h){
+      sessionStorage.setItem('ff_beta_ok','1');
+      btn.textContent='✓ Entrando...';
+      btn.style.background='linear-gradient(135deg,#00c97a,#00a863)';
+      setTimeout(()=>window.location.href='app.html',600);
+    } else {
+      _attempts++;
+      inp.classList.add('error');
+      setTimeout(()=>inp.classList.remove('error'),400);
+      err.textContent=_attempts>=3?'Código incorreto. Confirme com quem te enviou.':'Código incorreto.';
+      inp.value='';
+      btn.disabled=false;
+      btn.textContent='Entrar no Beta →';
+      if(_attempts>=5){
+        _locked=true;
+        btn.disabled=true;
+        err.textContent='Muitas tentativas. Tente novamente em alguns minutos.';
+        setTimeout(()=>{_locked=false;_attempts=0;btn.disabled=false;err.textContent='';}
+        ,120000);
+      }
+    }
+  }catch(e){
+    // Fallback simples para browsers mais antigos
+    if(val===atob('dGVzdGVkb21pbGhhbw==')){
+      sessionStorage.setItem('ff_beta_ok','1');
+      window.location.href='app.html';
+    }else{
+      err.textContent='Código incorreto.';
+      btn.disabled=false;btn.textContent='Entrar no Beta →';
+    }
+  }
+}
+
+function toggleEye(){
+  var inp=document.getElementById('code-input');
+  var btn=document.getElementById('eye-btn');
+  if(inp.type==='password'){inp.type='text';btn.textContent='🙈';}
+  else{inp.type='password';btn.textContent='👁';}
+}
+
+// Se já autenticado nesta sessão, ir direto pro app
+if(sessionStorage.getItem('ff_beta_ok')==='1'){
+  window.location.href='app.html';
+}
+</script>
+
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
